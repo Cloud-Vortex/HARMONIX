@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HARMONIX – Musical Harmonica Trainer</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Animated background layers -->
+    <div class="bg-gradient"></div>
+    <div class="bg-staff-lines"></div>
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <nav class="sidebar glass-panel">
+            <div class="logo">
+                <h1>Harmonix</h1>
+                <p class="subtitle">Musical Trainer</p>
+            </div>
+            <ul class="nav-links">
+                <li class="active" data-target="home"><i class="fa-solid fa-house"></i> <span>Home</span></li>
+                <li data-target="practice"><i class="fa-solid fa-music"></i> <span>Smart Practice</span></li>
+                <li data-target="listen-match"><i class="fa-solid fa-headphones"></i> <span>Listen & Match</span></li>
+                <li data-target="songs"><i class="fa-regular fa-folder-open"></i> <span>My Library</span></li>
+                <li data-target="progress"><i class="fa-solid fa-chart-line"></i> <span>Progress</span></li>
+            </ul>
+            
+            <div class="user-quick-stats">
+                <div class="level-badge">Level <span id="nav-level">1</span></div>
+                <div class="xp-bar-container">
+                    <div class="xp-bar" id="nav-xp-bar"></div>
+                </div>
+                <div class="streak"><i class="fa-solid fa-fire text-accent"></i> <span id="nav-streak">0</span> Days Streak</div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            
+            <!-- SECTION: HOME -->
+            <section id="home" class="view-section active">
+                <header class="section-header">
+                    <h2>Welcome to your <span class="text-primary">Studio</span></h2>
+                </header>
+                
+                <div class="dashboard-grid">
+                    <div class="dashboard-card glass-panel hero-card">
+                        <div class="hero-content">
+                            <h3>Ready to master the harmonica?</h3>
+                            <p>Continue your musical journey. Your last practiced song was "Ode to Joy".</p>
+                            <button class="btn btn-primary" id="btn-quick-start">
+                                <i class="fa-solid fa-play"></i> Start Guided Practice
+                            </button>
+                        </div>
+                        <div class="hero-visual">
+                            <i class="fa-solid fa-music abstract-note"></i>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card glass-panel stats-summary">
+                        <h3>Daily Challenge</h3>
+                        <p class="challenge-title">Play "Blues Riff in G"</p>
+                        <div class="challenge-reward">Reward: +50 XP</div>
+                        <button class="btn btn-outline" id="btn-challenge">Accept Challenge</button>
+                    </div>
+
+                    <div class="dashboard-card glass-panel level-summary">
+                        <h3>Rank: <span class="text-primary" id="home-rank">Beginner</span></h3>
+                        <div class="circular-progress">
+                            <svg viewBox="0 0 100 100">
+                                <circle class="bg" cx="50" cy="50" r="45"></circle>
+                                <circle class="progress" id="home-xp-circle" cx="50" cy="50" r="45"></circle>
+                            </svg>
+                            <div class="val text-secondary" id="home-xp-text">0/100 XP</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: SMART PRACTICE (Guided Practice & Accuracy) -->
+            <section id="practice" class="view-section">
+                <header class="section-header">
+                    <h2>Guided Practice Mode</h2>
+                    <div class="practice-controls">
+                        <span class="text-secondary" id="song-title-playing">Practicing: Ode to Joy</span>
+                    </div>
+                </header>
+
+                <!-- Guided Practice Steps -->
+                <div class="guided-steps glass-panel mb-4">
+                    <div class="step active" id="step-1"><div class="step-num">1</div>Listen</div>
+                    <div class="step" id="step-2"><div class="step-num">2</div>Breakdown</div>
+                    <div class="step" id="step-3"><div class="step-num">3</div>Practice</div>
+                    <div class="step" id="step-4"><div class="step-num">4</div>Mastery</div>
+                </div>
+
+                <div class="practice-grid">
+                    <!-- Audio Visuals Panel -->
+                    <div class="audio-panel glass-panel">
+                        <div class="canvas-container">
+                            <div class="canvas-label text-primary">Reference Melody</div>
+                            <canvas id="ref-canvas"></canvas>
+                        </div>
+                        <div class="canvas-container">
+                            <div class="canvas-label text-secondary">Your Harmonica (Live Mic)</div>
+                            <canvas id="live-canvas"></canvas>
+                        </div>
+                        
+                        <div class="playback-controls">
+                            <button class="btn btn-outline" id="btn-play-ref">
+                                <i class="fa-solid fa-headphones"></i> Listen 
+                            </button>
+                            <button class="btn btn-primary" id="btn-record">
+                                <i class="fa-solid fa-microphone"></i> Start Playing
+                            </button>
+                            <button class="btn btn-outline text-error hidden" id="btn-stop">
+                                <i class="fa-solid fa-stop"></i> Stop
+                            </button>
+                        </div>
+                        
+                        <div class="song-progress-container mt-4">
+                            <div class="text-secondary text-sm mb-1">Song Completion</div>
+                            <div class="song-progress-bar">
+                                <div class="song-progress-fill" id="song-progress" style="width: 0%"></div>
+                                <div class="highlight-difficult" style="left: 45%; width: 10%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Note Detection & Feedback Panel -->
+                    <div class="side-panel">
+                        <div class="note-detector glass-panel">
+                            <h3>Live Pitch</h3>
+                            <div class="detected-note" id="detected-note">--</div>
+                            
+                            <div class="tuning-meter">
+                                <div class="meter-bg"></div>
+                                <div class="meter-needle" id="meter-needle"></div>
+                                <div class="meter-center"></div>
+                            </div>
+                            <div class="status-text" id="pitch-status">Awaiting harmony...</div>
+                        </div>
+
+                        <div class="live-feedback glass-panel">
+                            <h3>Accuracy</h3>
+                            <div class="accuracy-display">
+                                <span id="accuracy-val" class="text-primary">0</span>%
+                            </div>
+                            
+                            <!-- Smart Practice Guide -->
+                            <div class="ai-feedback mt-4">
+                                <h4 class="text-secondary"><i class="fa-solid fa-lightbulb"></i> Smart Guide</h4>
+                                <p id="ai-suggestion">Play a note to receive guidance on pitch and timing.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: LISTEN & MATCH -->
+            <section id="listen-match" class="view-section">
+                <header class="section-header">
+                    <h2>Listen & Match</h2>
+                </header>
+                <div class="glass-panel text-center mb-4 p-5">
+                    <p class="text-secondary mb-4 text-lg">Train your ear! Listen to the harmonica phrase, then try to replicate it perfectly.</p>
+                    <div class="listen-match-controls">
+                        <button class="btn btn-outline btn-large" id="btn-lm-listen"><i class="fa-solid fa-play"></i> Hear Phrase</button>
+                        <button class="btn btn-primary btn-large" id="btn-lm-play"><i class="fa-solid fa-microphone"></i> Your Turn</button>
+                    </div>
+                    
+                    <div class="match-result mt-5 hidden" id="lm-result-container">
+                        <h3>Match Score</h3>
+                        <div class="match-score text-primary" id="lm-score">0%</div>
+                        <p id="lm-feedback" class="text-lg mt-2 font-italic">Needs improvement.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: SONG LIBRARY -->
+            <section id="songs" class="view-section">
+                <header class="section-header">
+                    <h2>My Song Library</h2>
+                    <div class="upload-btn-wrapper">
+                        <button class="btn btn-primary"><i class="fa-solid fa-cloud-arrow-up"></i> Add Own Song</button>
+                        <input type="file" id="song-upload" accept="audio/mp3, audio/wav" />
+                    </div>
+                </header>
+                
+                <div class="folder-header text-secondary mb-3">
+                    <i class="fa-solid fa-folder-open"></i> Local Storage / My Tunes
+                </div>
+                
+                <div class="songs-grid" id="songs-container">
+                    <!-- Songs dynamically loaded here -->
+                </div>
+            </section>
+
+            <!-- SECTION: PROGRESS -->
+            <section id="progress" class="view-section">
+                <header class="section-header">
+                    <h2>Your Progress</h2>
+                </header>
+
+                <div class="progress-grid">
+                    <div class="chart-container glass-panel">
+                        <h3>Accuracy Over Time</h3>
+                        <canvas id="accuracyChart"></canvas>
+                    </div>
+
+                    <div class="badges-container glass-panel">
+                        <h3>Badges & Achievements</h3>
+                        <div class="badges-grid" id="badges-container">
+                            <!-- Badges dynamically loaded -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="glass-panel mt-4 p-4 text-center">
+                    <h3>Total Practice Time</h3>
+                    <div class="text-primary" style="font-size: 2.5rem; font-family: var(--font-heading);" id="total-time">0h 0m</div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal overlay hidden" id="reward-modal">
+        <div class="modal-content glass-panel glow-primary">
+            <h2 class="text-primary" style="font-family: var(--font-heading); font-size: 2.5rem; text-transform: none;">Session Complete!</h2>
+            <div class="reward-stats mt-4">
+                <div class="text-secondary text-lg">XP Earned: <span id="modal-xp" class="text-primary font-bold">+20</span></div>
+                <div class="text-secondary text-lg">Accuracy: <span id="modal-acc" class="text-success font-bold">85%</span></div>
+            </div>
+            <button class="btn btn-primary mt-5" id="btn-close-modal" style="width: 100%; justify-content: center;">Continue Journey</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script src="audio.js"></script>
+</body>
+</html>
